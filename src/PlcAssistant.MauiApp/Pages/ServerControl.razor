@@ -1,0 +1,125 @@
+@page "/server-control"
+@using PlcAssistant.Domain.Interfaces
+@inject IPlcServerService PlcServerService
+
+<PageTitle>Server Control</PageTitle>
+
+<h1>PLC Server Control</h1>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Server Status</h5>
+                
+                <div class="mb-3">
+                    <div class="alert @(_isRunning ? "alert-success" : "alert-warning")">
+                        <strong>Status:</strong> @(_isRunning ? "Running" : "Stopped")
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <p><strong>Details:</strong> @_statusMessage</p>
+                </div>
+
+                <div class="btn-group" role="group">
+                    <button class="btn btn-success" @onclick="StartServer" disabled="@(_isRunning || _isProcessing)">
+                        <span class="oi oi-play-circle"></span> Start Server
+                    </button>
+                    <button class="btn btn-danger" @onclick="StopServer" disabled="@(!_isRunning || _isProcessing)">
+                        <span class="oi oi-media-stop"></span> Stop Server
+                    </button>
+                    <button class="btn btn-info" @onclick="RefreshStatus" disabled="@_isProcessing">
+                        <span class="oi oi-reload"></span> Refresh
+                    </button>
+                </div>
+
+                @if (_isProcessing)
+                {
+                    <div class="mt-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <span class="ms-2">Processing...</span>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">
+                        @_errorMessage
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _isRunning;
+    private bool _isProcessing;
+    private string _statusMessage = "Loading...";
+    private string _errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshStatus();
+    }
+
+    private async Task StartServer()
+    {
+        _isProcessing = true;
+        _errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            await PlcServerService.StartAsync();
+            await RefreshStatus();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error starting server: {ex.Message}";
+        }
+        finally
+        {
+            _isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task StopServer()
+    {
+        _isProcessing = true;
+        _errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            await PlcServerService.StopAsync();
+            await RefreshStatus();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error stopping server: {ex.Message}";
+        }
+        finally
+        {
+            _isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RefreshStatus()
+    {
+        try
+        {
+            _isRunning = PlcServerService.IsRunning;
+            _statusMessage = await PlcServerService.GetStatusAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error getting status: {ex.Message}";
+        }
+    }
+}

@@ -1,0 +1,90 @@
+@page "/memory-addresses"
+@using PlcAssistant.Domain.Entities
+@using PlcAssistant.Domain.Interfaces
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Popups
+@inject IPlcMemoryAddressRepository Repository
+
+<PageTitle>Memory Addresses</PageTitle>
+
+<h1>PLC Memory Addresses</h1>
+
+<div class="mt-4">
+    <SfGrid @ref="_grid" DataSource="@_addresses" AllowPaging="true" AllowSorting="true" 
+            Toolbar="@(new List<string>() { "Add", "Edit", "Delete", "Update", "Cancel" })">
+        <GridEvents OnActionBegin="ActionBeginHandler" TValue="PlcMemoryAddress"></GridEvents>
+        <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Dialog"></GridEditSettings>
+        <GridPageSettings PageSize="10"></GridPageSettings>
+        <GridColumns>
+            <GridColumn Field="@nameof(PlcMemoryAddress.Name)" HeaderText="Name" Width="150"></GridColumn>
+            <GridColumn Field="@nameof(PlcMemoryAddress.Address)" HeaderText="Address" Width="120"></GridColumn>
+            <GridColumn Field="@nameof(PlcMemoryAddress.DataType)" HeaderText="Data Type" Width="120"></GridColumn>
+            <GridColumn Field="@nameof(PlcMemoryAddress.CurrentValue)" HeaderText="Current Value" Width="120"></GridColumn>
+            <GridColumn Field="@nameof(PlcMemoryAddress.Description)" HeaderText="Description" Width="200"></GridColumn>
+            <GridColumn Field="@nameof(PlcMemoryAddress.IsReadOnly)" HeaderText="Read Only" DisplayAsCheckBox="true" Width="100"></GridColumn>
+            <GridColumn Field="@nameof(PlcMemoryAddress.CreatedAt)" HeaderText="Created" Format="g" Width="150"></GridColumn>
+        </GridColumns>
+    </SfGrid>
+</div>
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="alert alert-danger mt-3">
+        @_errorMessage
+    </div>
+}
+
+@code {
+    private SfGrid<PlcMemoryAddress>? _grid;
+    private List<PlcMemoryAddress> _addresses = new();
+    private string _errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAddresses();
+    }
+
+    private async Task LoadAddresses()
+    {
+        try
+        {
+            var addresses = await Repository.GetAllAsync();
+            _addresses = addresses.ToList();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading addresses: {ex.Message}";
+        }
+    }
+
+    private async Task ActionBeginHandler(ActionEventArgs<PlcMemoryAddress> args)
+    {
+        _errorMessage = string.Empty;
+
+        try
+        {
+            if (args.RequestType == Syncfusion.Blazor.Grids.Action.Save)
+            {
+                if (args.Action == "Add")
+                {
+                    await Repository.AddAsync(args.Data);
+                }
+                else
+                {
+                    await Repository.UpdateAsync(args.Data);
+                }
+                await LoadAddresses();
+            }
+            else if (args.RequestType == Syncfusion.Blazor.Grids.Action.Delete)
+            {
+                await Repository.DeleteAsync(args.Data.Id);
+                await LoadAddresses();
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error: {ex.Message}";
+            args.Cancel = true;
+        }
+    }
+}

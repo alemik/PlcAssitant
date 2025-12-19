@@ -1,0 +1,128 @@
+@page "/configuration"
+@using PlcAssistant.Domain.Entities
+@using PlcAssistant.Domain.Interfaces
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Inputs
+@inject IServerConfigurationRepository Repository
+
+<PageTitle>Configuration</PageTitle>
+
+<h1>Server Configuration</h1>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                @if (_config != null)
+                {
+                    <EditForm Model="_config" OnValidSubmit="SaveConfiguration">
+                        <div class="mb-3">
+                            <label class="form-label">IP Address</label>
+                            <SfTextBox @bind-Value="_config.IpAddress" Placeholder="127.0.0.1"></SfTextBox>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Port</label>
+                            <SfNumericTextBox @bind-Value="_config.Port" Min="1" Max="65535" Format="N0"></SfNumericTextBox>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Update Interval (ms)</label>
+                            <SfNumericTextBox @bind-Value="_config.UpdateIntervalMs" Min="10" Max="10000" Format="N0"></SfNumericTextBox>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <input type="checkbox" @bind="_config.AutoStart" /> Auto-start server
+                            </label>
+                        </div>
+
+                        <div class="mb-3">
+                            <SfButton IsPrimary="true" type="submit" Disabled="@_isSaving">
+                                @(_isSaving ? "Saving..." : "Save Configuration")
+                            </SfButton>
+                        </div>
+                    </EditForm>
+
+                    @if (_isSaved)
+                    {
+                        <div class="alert alert-success">
+                            Configuration saved successfully!
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <div class="alert alert-danger">
+                            @_errorMessage
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ServerConfiguration? _config;
+    private bool _isSaving;
+    private bool _isSaved;
+    private string _errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadConfiguration();
+    }
+
+    private async Task LoadConfiguration()
+    {
+        try
+        {
+            _config = await Repository.GetConfigurationAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading configuration: {ex.Message}";
+        }
+    }
+
+    private async Task SaveConfiguration()
+    {
+        _isSaving = true;
+        _errorMessage = string.Empty;
+        _isSaved = false;
+        StateHasChanged();
+
+        try
+        {
+            if (_config != null)
+            {
+                await Repository.UpdateConfigurationAsync(_config);
+                _isSaved = true;
+                
+                // Hide success message after 3 seconds
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(3000);
+                    _isSaved = false;
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error saving configuration: {ex.Message}";
+        }
+        finally
+        {
+            _isSaving = false;
+            StateHasChanged();
+        }
+    }
+}

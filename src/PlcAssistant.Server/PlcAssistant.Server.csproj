@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-PlcAssistant.Server-149691af-c2bf-4a90-aa07-098d843a9c9c</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlcAssistant.Domain\PlcAssistant.Domain.csproj" />
+    <ProjectReference Include="..\PlcAssistant.Infrastructure\PlcAssistant.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
