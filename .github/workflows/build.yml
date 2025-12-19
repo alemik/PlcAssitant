@@ -1,0 +1,132 @@
+name: Build PlcAssistant
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-server:
+    name: Build Server Components
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+    
+    - name: Restore dependencies
+      run: |
+        cd src/PlcAssistant.Domain
+        dotnet restore
+        cd ../PlcAssistant.Infrastructure
+        dotnet restore
+        cd ../PlcAssistant.Server
+        dotnet restore
+    
+    - name: Build Domain
+      run: |
+        cd src/PlcAssistant.Domain
+        dotnet build --no-restore -c Release
+    
+    - name: Build Infrastructure
+      run: |
+        cd src/PlcAssistant.Infrastructure
+        dotnet build --no-restore -c Release
+    
+    - name: Build Server
+      run: |
+        cd src/PlcAssistant.Server
+        dotnet build --no-restore -c Release
+    
+    - name: Test Server
+      run: |
+        cd src/PlcAssistant.Server
+        timeout 5 dotnet run -- --seed || true
+    
+    - name: Publish Server (Linux)
+      run: |
+        cd src/PlcAssistant.Server
+        dotnet publish -c Release -r linux-x64 --self-contained -o ./publish/linux
+    
+    - name: Upload Server Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-linux
+        path: src/PlcAssistant.Server/publish/linux
+
+  build-maui-macos:
+    name: Build MAUI App (macOS)
+    runs-on: macos-14
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+    
+    - name: Install MAUI Workload
+      run: dotnet workload install maui
+    
+    - name: Restore dependencies
+      run: |
+        cd src/PlcAssistant.MauiApp
+        dotnet restore
+    
+    - name: Build MAUI App
+      run: |
+        cd src/PlcAssistant.MauiApp
+        dotnet build -f net10.0-maccatalyst -c Release
+    
+    - name: Publish MAUI App
+      run: |
+        cd src/PlcAssistant.MauiApp
+        dotnet publish -f net10.0-maccatalyst -c Release
+    
+    - name: Upload MAUI App Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: maui-macos
+        path: src/PlcAssistant.MauiApp/bin/Release/net10.0-maccatalyst/publish
+
+  build-maui-windows:
+    name: Build MAUI App (Windows)
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+    
+    - name: Install MAUI Workload
+      run: dotnet workload install maui
+    
+    - name: Restore dependencies
+      run: |
+        cd src/PlcAssistant.MauiApp
+        dotnet restore
+    
+    - name: Build MAUI App
+      run: |
+        cd src/PlcAssistant.MauiApp
+        dotnet build -f net10.0-windows10.0.19041.0 -c Release
+    
+    - name: Publish MAUI App
+      run: |
+        cd src/PlcAssistant.MauiApp
+        dotnet publish -f net10.0-windows10.0.19041.0 -c Release
+    
+    - name: Upload MAUI App Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: maui-windows
+        path: src/PlcAssistant.MauiApp/bin/Release/net10.0-windows10.0.19041.0/publish

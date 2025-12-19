@@ -1,0 +1,45 @@
+@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Welcome to PLC Assistant</h1>
+
+<p class="lead">
+    A .NET MAUI Hybrid application for simulating a PLC (Programmable Logic Controller).
+</p>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Server Control</h5>
+                <p class="card-text">Start and stop the PLC server, monitor its status.</p>
+                <a href="server-control" class="btn btn-primary">Go to Server Control</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Memory Addresses</h5>
+                <p class="card-text">Manage PLC memory addresses (CRUD operations).</p>
+                <a href="memory-addresses" class="btn btn-primary">Manage Addresses</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Configuration</h5>
+                <p class="card-text">Configure server settings like port, IP address, etc.</p>
+                <a href="configuration" class="btn btn-primary">Configure</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info mt-4">
+    <strong>Note:</strong> This application uses LiteDB for data persistence and implements a DDD modular monolith architecture.
+</div>
