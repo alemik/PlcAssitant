@@ -81,6 +81,16 @@ dotnet run -f net10.0-maccatalyst
 - Auto-start configurabile
 - Gestione stato (Start/Stop)
 - Logging delle operazioni
+- Seeding di dati di esempio con flag `--seed`
+
+### Dati di Esempio
+Quando si avvia con `dotnet run -- --seed`, vengono creati automaticamente:
+- 5 indirizzi di memoria PLC di esempio:
+  - Temperature Sensor 1 (DB1.DBD0, Real)
+  - Motor Status (DB1.DBX4.0, Bool)
+  - Production Counter (DB1.DBD8, DInt)
+  - Pressure Sensor (DB2.DBD0, Real)
+  - Emergency Stop (I0.0, Bool, Read-only)
 
 ### UI MAUI Hybrid
 1. **Home** - Dashboard principale

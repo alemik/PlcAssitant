@@ -70,11 +70,18 @@ cd src/PlcAssistant.Server
 dotnet run
 ```
 
+Per avviare con dati di esempio:
+```bash
+cd src/PlcAssistant.Server
+dotnet run -- --seed
+```
+
 Il server si avvierà in background e:
 - Creerà automaticamente il database LiteDB
 - Leggerà la configurazione dal database
 - Se `AutoStart` è abilitato, avvierà automaticamente il server PLC
 - Loggerà lo stato ogni 5 secondi
+- Con `--seed`, popolerà il database con 5 indirizzi di memoria di esempio
 
 ### Avviare l'app MAUI
 

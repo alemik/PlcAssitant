@@ -41,9 +41,21 @@ public static class MauiProgram
         // Register PLC server service
         builder.Services.AddSingleton<IPlcServerService, PlcServerService>();
 
+        // Register data seeder
+        builder.Services.AddSingleton<DataSeeder>();
+
         // Add Syncfusion Blazor services
         builder.Services.AddSyncfusionBlazor();
 
-        return builder.Build();
+        var app = builder.Build();
+
+        // Seed initial data on first run
+        Task.Run(async () =>
+        {
+            var seeder = app.Services.GetRequiredService<DataSeeder>();
+            await seeder.SeedAsync();
+        });
+
+        return app;
     }
 }
